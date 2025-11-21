@@ -12,6 +12,8 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from catboost import CatBoostRegressor
 import mlflow
 import mlflow.catboost
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 
 def load_params():
@@ -49,6 +51,121 @@ def calculate_spatial_errors(comparison_df):
         errors.append(error)
     
     return np.array(errors)
+
+
+def plot_predictions(comparison_df, test_project_id, metrics):
+    """Plot prediction results"""
+    # Add actual and predicted X,Y coordinates
+    comparison_df['actual_x_coord'] = np.nan
+    comparison_df['actual_y_coord'] = np.nan
+    comparison_df['predicted_x_coord'] = np.nan
+    comparison_df['predicted_y_coord'] = np.nan
+    
+    for idx, row in comparison_df.iterrows():
+        wall_axis = row['wall_long_side_axis']
+        
+        if wall_axis == 'x':
+            comparison_df.loc[idx, 'actual_x_coord'] = row['actual_real_coord']
+            comparison_df.loc[idx, 'predicted_x_coord'] = row['predicted_real_coord']
+            comparison_df.loc[idx, 'actual_y_coord'] = row['door_center_y']
+            comparison_df.loc[idx, 'predicted_y_coord'] = row['door_center_y']
+        else:  # y
+            comparison_df.loc[idx, 'actual_y_coord'] = row['actual_real_coord']
+            comparison_df.loc[idx, 'predicted_y_coord'] = row['predicted_real_coord']
+            comparison_df.loc[idx, 'actual_x_coord'] = row['door_center_x']
+            comparison_df.loc[idx, 'predicted_x_coord'] = row['door_center_x']
+    
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    
+    # 1. Spatial plot with error vectors
+    ax = axes[0, 0]
+    ax.quiver(
+        comparison_df["actual_x_coord"],
+        comparison_df["actual_y_coord"],
+        comparison_df["predicted_x_coord"] - comparison_df["actual_x_coord"],
+        comparison_df["predicted_y_coord"] - comparison_df["actual_y_coord"],
+        angles="xy", scale_units="xy", scale=1,
+        color="red", alpha=0.5, width=0.003, headwidth=4, headlength=6
+    )
+    
+    sc = ax.scatter(
+        comparison_df["actual_x_coord"],
+        comparison_df["actual_y_coord"],
+        c=comparison_df["error_real_coord"],
+        cmap="coolwarm",
+        alpha=0.9, s=80
+    )
+    
+    arrow_proxy = mpatches.FancyArrow(0, 0, 0.3, 0, color="red", width=0.02,
+                                      head_width=0.01, head_length=0.15)
+    ax.legend([sc, arrow_proxy], ["Actual Doors", "Error Vector"])
+    ax.set_xlabel("X coordinate")
+    ax.set_ylabel("Y coordinate")
+    ax.set_title(f"Prediction Errors - Test Project {test_project_id}")
+    ax.axis("equal")
+    ax.grid(True, linestyle="--", alpha=0.4)
+    
+    cbar = plt.colorbar(sc, ax=ax)
+    cbar.set_label("Error (distance)")
+    
+    # 2. Error histogram
+    ax = axes[0, 1]
+    ax.hist(comparison_df["error_real_coord"], bins=50, color="orange", alpha=0.7, edgecolor='black')
+    ax.axvline(metrics['median_error'], color='red', linestyle='--', linewidth=2, 
+               label=f'Median: {metrics["median_error"]:.3f}')
+    ax.axvline(metrics['mean_error'], color='blue', linestyle='--', linewidth=2, 
+               label=f'Mean: {metrics["mean_error"]:.3f}')
+    ax.set_xlabel("Error (distance)")
+    ax.set_ylabel("Count")
+    ax.set_title("Distribution of Prediction Errors")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    
+    # 3. Parity plot
+    ax = axes[1, 0]
+    ax.scatter(comparison_df["actual_fraction"], comparison_df["predicted_fraction"], 
+               alpha=0.6, s=50)
+    lims = [0, 1]
+    ax.plot(lims, lims, 'r--', linewidth=2, label='Perfect prediction')
+    ax.set_xlabel("Actual Position (fraction)")
+    ax.set_ylabel("Predicted Position (fraction)")
+    ax.set_title("Parity Plot")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.axis('equal')
+    
+    # 4. Metrics text
+    ax = axes[1, 1]
+    ax.axis('off')
+    
+    metrics_text = f"""
+    Test Project: {test_project_id}
+    Number of Doors: {metrics['n_doors']}
+    
+    Error Metrics:
+    ─────────────────────────
+    Median Error: {metrics['median_error']:.4f}
+    Mean Error: {metrics['mean_error']:.4f}
+    MAE: {metrics['mae']:.4f}
+    RMSE: {metrics['rmse']:.4f}
+    Max Error: {metrics['max_error']:.4f}
+    
+    Percentiles:
+    ─────────────────────────
+    25th: {metrics['p25']:.4f}
+    50th: {metrics['p50']:.4f}
+    75th: {metrics['p75']:.4f}
+    90th: {metrics['p90']:.4f}
+    95th: {metrics['p95']:.4f}
+    """
+    
+    ax.text(0.1, 0.9, metrics_text, transform=ax.transAxes,
+            fontsize=12, verticalalignment='top', family='monospace',
+            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    
+    plt.tight_layout()
+    
+    return fig
 
 
 def main():
@@ -167,7 +284,8 @@ def main():
             'p50': np.percentile(spatial_errors, 50),
             'p75': np.percentile(spatial_errors, 75),
             'p90': np.percentile(spatial_errors, 90),
-            'p95': np.percentile(spatial_errors, 95)
+            'p95': np.percentile(spatial_errors, 95),
+            'n_doors': len(comparison_df)
         }
         
         # Print metrics
@@ -233,6 +351,15 @@ def main():
         print("\nFeature Importance:")
         print(feature_importance.to_string(index=False))
         
+        # Create and save visualization
+        print("\nGenerating visualization...")
+        fig = plot_predictions(comparison_df, test_project_id, test_metrics)
+        
+        plot_path = f"models/prediction_plot_project_{test_project_id}.png"
+        fig.savefig(plot_path, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+        print(f"  ✓ Visualization saved: {plot_path}")
+        
         # Save artifacts
         Path("models").mkdir(exist_ok=True)
         
@@ -245,6 +372,14 @@ def main():
         comparison_path = f"models/predictions_project_{test_project_id}.csv"
         comparison_df.to_csv(comparison_path, index=False)
         mlflow.log_artifact(comparison_path)
+        
+        # Log visualization
+        mlflow.log_artifact(plot_path)
+        
+        # Set run name and tags
+        mlflow.set_tag("mlflow.runName", f"test_project_{test_project_id}")
+        mlflow.set_tag("test_project", test_project_id)
+        mlflow.set_tag("model_type", "CatBoost")
         
         # Save model
         model_path = f"models/catboost_model_test_{test_project_id}.pkl"

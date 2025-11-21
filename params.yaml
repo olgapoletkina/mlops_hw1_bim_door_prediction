@@ -40,7 +40,8 @@ model:
 
 # ===================== TRAINING =====================
 train:
-  test_project_id: '109'  # Project to use as test set
+  # test_project_id: '109'  # Project to use as test set
+  test_project_id: '160'  # Project to use as test set
   random_state: 42
 
 # ===================== MLFLOW =====================

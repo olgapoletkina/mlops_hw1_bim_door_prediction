@@ -52,8 +52,8 @@ stages:
       nfiles: 10
     - path: src/train.py
       hash: md5
-      md5: ee3dc05f46b2b9b9a15e63a3e9bc6658
-      size: 10504
+      md5: 7b197fb70435c894a6fa2aa3c76de029
+      size: 15842
     params:
       params.yaml:
         features.feature_columns:
@@ -72,17 +72,17 @@ stages:
           iterations: 1000
           depth: 6
           random_state: 42
-        train.test_project_id: '109'
+        train.test_project_id: '160'
     outs:
-    - path: models/catboost_model_test_109.pkl
+    - path: models/catboost_model_test_160.pkl
       hash: md5
-      md5: f3d2080552ec216d1bb1bb4414f0032e
-      size: 1161147
+      md5: 11524fd838fd7efc4c414f7d8c19e711
+      size: 550471
     - path: models/feature_importance.csv
       hash: md5
-      md5: c55c7deede0945b4adef5b7431095746
-      size: 292
-    - path: models/predictions_project_109.csv
+      md5: dc01355fddab8b1b0752938a1fab6d43
+      size: 293
+    - path: models/predictions_project_160.csv
       hash: md5
-      md5: 904ce698647fb6f18abce56fb51f5bab
-      size: 195002
+      md5: 4572ef349cd255d2bed6dfbf2ed45f51
+      size: 281394

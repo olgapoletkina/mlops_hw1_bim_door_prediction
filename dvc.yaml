@@ -1,0 +1,33 @@
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+      - src/prepare.py
+      - data/raw
+    params:
+      - data.project_ids
+      - data.raw_path
+      - data.processed_path
+      - features.feature_columns
+      - features.target_column
+      - features.door_half_width
+    outs:
+      - data/processed:
+          cache: true
+
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - data/processed
+    params:
+      - train.test_project_id
+      - features.feature_columns
+      - features.target_column
+      - model.catboost
+    metrics:
+      - models/feature_importance.csv:
+          cache: false
+    outs:
+      - models/catboost_model_test_${train.test_project_id}.pkl
+      - models/predictions_project_${train.test_project_id}.csv
