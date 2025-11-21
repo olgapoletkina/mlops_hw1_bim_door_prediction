@@ -1,0 +1,49 @@
+# ===================== DATA CONFIGURATION =====================
+data:
+  raw_path: data/raw
+  processed_path: data/processed
+  project_ids:
+    - '109'
+    - '160'
+    - '246'
+    - '302'
+    - '1081'
+    - '1082'
+    - '1083'
+    - '2961'
+    - '2962'
+
+# ===================== FEATURES =====================
+features:
+  feature_columns:
+    - wall_length
+    - room_1_start_fraction
+    - room_1_end_fraction
+    - room_1_wall_fraction
+    - room_2_start_fraction
+    - room_2_end_fraction
+    - room_2_wall_fraction
+  
+  target_column: door_position_fraction
+  
+  door_half_width: 0.45
+
+# ===================== MODEL CONFIGURATION =====================
+model:
+  catboost:
+    verbose: 0
+    loss_function: RMSE
+    learning_rate: 0.015
+    iterations: 1000
+    depth: 6
+    random_state: 42
+
+# ===================== TRAINING =====================
+train:
+  test_project_id: '109'  # Project to use as test set
+  random_state: 42
+
+# ===================== MLFLOW =====================
+mlflow:
+  experiment_name: door_location_prediction
+  tracking_uri: sqlite:///mlflow.db
