@@ -72,17 +72,17 @@ stages:
           iterations: 1000
           depth: 6
           random_state: 42
-        train.test_project_id: '160'
+        train.test_project_id: '302'
     outs:
-    - path: models/catboost_model_test_160.pkl
+    - path: models/catboost_model_test_302.pkl
       hash: md5
-      md5: 11524fd838fd7efc4c414f7d8c19e711
-      size: 550471
+      md5: d84e6d1aa234b90ecc60875559f61e7a
+      size: 1156547
     - path: models/feature_importance.csv
       hash: md5
-      md5: dc01355fddab8b1b0752938a1fab6d43
-      size: 293
-    - path: models/predictions_project_160.csv
+      md5: 6a2cfdadcaba538efc4c1c19479612dc
+      size: 292
+    - path: models/predictions_project_302.csv
       hash: md5
-      md5: 4572ef349cd255d2bed6dfbf2ed45f51
-      size: 281394
+      md5: 8b7542be1f12999014bf7cf24ced6740
+      size: 292106
