@@ -1,0 +1,88 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: de3aa8557e2dd072832b7169a1c33659.dir
+      size: 110645472
+      nfiles: 18
+    - path: src/prepare.py
+      hash: md5
+      md5: d4f0cb7a6b48a8fe7b28d2f90bb752e0
+      size: 13670
+    params:
+      params.yaml:
+        data.processed_path: data/processed
+        data.project_ids:
+        - '109'
+        - '160'
+        - '246'
+        - '302'
+        - '1081'
+        - '1082'
+        - '1083'
+        - '2961'
+        - '2962'
+        data.raw_path: data/raw
+        features.door_half_width: 0.45
+        features.feature_columns:
+        - wall_length
+        - room_1_start_fraction
+        - room_1_end_fraction
+        - room_1_wall_fraction
+        - room_2_start_fraction
+        - room_2_end_fraction
+        - room_2_wall_fraction
+        features.target_column: door_position_fraction
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: bd33d98a788e0491720be3cb20768764.dir
+      size: 3675612
+      nfiles: 10
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: bd33d98a788e0491720be3cb20768764.dir
+      size: 3675612
+      nfiles: 10
+    - path: src/train.py
+      hash: md5
+      md5: ee3dc05f46b2b9b9a15e63a3e9bc6658
+      size: 10504
+    params:
+      params.yaml:
+        features.feature_columns:
+        - wall_length
+        - room_1_start_fraction
+        - room_1_end_fraction
+        - room_1_wall_fraction
+        - room_2_start_fraction
+        - room_2_end_fraction
+        - room_2_wall_fraction
+        features.target_column: door_position_fraction
+        model.catboost:
+          verbose: 0
+          loss_function: RMSE
+          learning_rate: 0.015
+          iterations: 1000
+          depth: 6
+          random_state: 42
+        train.test_project_id: '109'
+    outs:
+    - path: models/catboost_model_test_109.pkl
+      hash: md5
+      md5: f3d2080552ec216d1bb1bb4414f0032e
+      size: 1161147
+    - path: models/feature_importance.csv
+      hash: md5
+      md5: c55c7deede0945b4adef5b7431095746
+      size: 292
+    - path: models/predictions_project_109.csv
+      hash: md5
+      md5: 904ce698647fb6f18abce56fb51f5bab
+      size: 195002
