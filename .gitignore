@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.ipynb_checkpoints/
+*.pyc
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Data (managed by DVC)
+data/raw/*
+data/processed/*
+!data/.gitkeep
+
+# Models
+models/*.pkl
+models/*.pth
+models/*.cbm
+models/*.bin
+
+# MLflow
+mlruns/
+mlflow.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# DVC
+/data/processed/train_data.csv
