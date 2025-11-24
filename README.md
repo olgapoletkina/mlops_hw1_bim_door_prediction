@@ -16,7 +16,7 @@
 
 ### 1. Клонирование репозитория
 ```bash
-git clone <repository-url>
+git clone https://github.com/olgapoletkina/mlops_hw1_bim_door_prediction.git
 cd mlops_hw1_bim_door_prediction
 ```
 
@@ -132,16 +132,7 @@ python src/train.py
 
 ## Метрики качества
 
-### Fraction-based метрики (нормализованные координаты):
-- **MAE:** 0.013692
-- **RMSE:** 0.024487
-- **R²:** 0.991772
-
-### Spatial метрики (реальные координаты, метры):
-- **Median Error:** 0.0149 м
-- **Mean Error:** 0.0365 м
-- **Max Error:** 0.3534 м
-- **95th percentile:** 0.1142 м
+![MLflow Experiments](img/Screenshot%202025-11-24%20135122.png)
 
 ## Конфигурация
 
